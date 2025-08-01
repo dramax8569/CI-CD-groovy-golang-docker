@@ -12,15 +12,10 @@ pipeline {
     stage('Checkout') {
       agent any
       steps {
-        // Limpia cualquier resto
         deleteDir()
-
-        // Clona el repo completo y crea .git
         git url: 'https://github.com/dramax8569/CI-CD-groovy-golang-docker.git',
             branch: 'main',
             credentialsId: "${GIT_CREDENTIALS_ID}"
-
-        // Verifica el contenido
         sh 'ls -la'
       }
     }
@@ -43,10 +38,7 @@ pipeline {
     stage('Docker Build & Push') {
       agent any
       steps {
-        // Construye la imagen
         sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-
-        // Autentica y sube
         withCredentials([usernamePassword(
           credentialsId: "${DOCKER_CREDENTIALS_ID}",
           usernameVariable: 'DOCKER_USER',
@@ -63,6 +55,6 @@ pipeline {
 
   post {
     success { echo "✅ Pipeline finalizado exitosamente." }
-    failure { echo "❌ Algo falló en la ejecución del pipeline."  }
+    failure { echo "❌ Algo falló en la ejecución del pipeline." }
   }
 }
