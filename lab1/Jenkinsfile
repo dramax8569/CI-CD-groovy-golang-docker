@@ -20,6 +20,15 @@ pipeline {
             }
         }
 
+        stages {
+            stage('Clone') {
+                steps {
+                    sh 'git clone https://github.com/dramax8569/CI-CD-groovy-golang-docker.git'
+                    sh 'ls -la'
+                }
+            }
+        }
+
         stage('Build Go App') {
             steps {
                 sh 'go build -o app'
