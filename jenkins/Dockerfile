@@ -6,3 +6,4 @@ RUN apt-get update && \
     groupadd -for -g 999 docker && \
     usermod -aG docker jenkins
 
+USER jenkins
