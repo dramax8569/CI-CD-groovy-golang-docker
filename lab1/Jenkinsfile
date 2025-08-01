@@ -1,5 +1,5 @@
 pipeline {
-  agent none
+  agent any
 
   options {
     skipDefaultCheckout()
@@ -21,7 +21,7 @@ pipeline {
                 sh 'git rev-parse --is-inside-work-tree || echo "NO es un repo Git"'
             }
         }
-        
+
     stage('Checkout') {
       agent any
       steps {
