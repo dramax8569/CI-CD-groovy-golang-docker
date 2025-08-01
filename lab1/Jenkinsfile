@@ -3,6 +3,7 @@ pipeline {
         docker {
             image 'golang:1.21'
             args '-v /var/run/docker.sock:/var/run/docker.sock'
+            reuseNode true
         }
     }
 
