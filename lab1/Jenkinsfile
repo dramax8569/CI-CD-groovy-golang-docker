@@ -44,6 +44,8 @@ pipeline {
       steps {
         dir('lab1') {
           sh 'go version'
+          sh 'go mod init lab1 || true'   // Add this line to initialize go.mod if missing
+          sh 'go mod tidy'                // Add this line to resolve dependencies
           sh 'go build -o app'
           sh 'go test ./...'
         }
