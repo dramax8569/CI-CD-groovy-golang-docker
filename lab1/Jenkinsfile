@@ -22,6 +22,14 @@ pipeline {
       }
     }
 
+    stage('Lint') {
+      steps {
+        dir('lab1') {
+          sh 'go vet ./...'
+        }
+      }
+    }
+    
     stage('Build & Test') {
       agent {
         docker {
