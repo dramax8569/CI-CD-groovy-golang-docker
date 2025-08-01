@@ -42,28 +42,47 @@ pipeline {
         }
       }
       steps {
-        sh 'go version'
-        sh 'go build -o app'
-        sh 'go test ./...'
+        dir('lab1') {
+          sh 'go version'
+          sh 'go build -o app'
+          sh 'go test ./...'
+        }
       }
     }
 
     stage('Docker Build & Push') {
-      agent any
       steps {
-        sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
-        withCredentials([usernamePassword(
-          credentialsId: "${DOCKER_CREDENTIALS_ID}",
-          usernameVariable: 'DOCKER_USER',
-          passwordVariable: 'DOCKER_PASS'
-        )]) {
-          sh '''
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker push ${IMAGE_NAME}:${IMAGE_TAG}
-          '''
+        dir('lab1') {
+          sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+          withCredentials([usernamePassword(
+            credentialsId: "${DOCKER_CREDENTIALS_ID}",
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+          )]) {
+            sh '''
+              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+              docker push ${IMAGE_NAME}:${IMAGE_TAG}
+            '''
+          }
         }
       }
     }
+
+    stage('Deploy') {
+      steps {
+        script {
+          def deployScript = '''
+            #!/bin/bash
+            docker pull ${IMAGE_NAME}:${IMAGE_TAG}
+            docker run -d --name ci-cd-app -p 8080:8080 ${IMAGE_NAME}:${IMAGE_TAG}
+          '''
+          writeFile file: 'deploy.sh', text: deployScript
+          sh 'chmod +x deploy.sh'
+          sh './deploy.sh'
+        }
+      }
+    }
+
   }
 
   post {
