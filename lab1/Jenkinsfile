@@ -5,7 +5,7 @@ pipeline {
   }
 
   environment {
-    IMAGE_NAME            = "dramax8569/ci-cd-groovy-golang-docker"
+    IMAGE_NAME            = "dramax/ci-cd-groovy-golang-docker"
     IMAGE_TAG             = "latest"
     DOCKER_CREDENTIALS_ID = "dockerhub-creds"
     GIT_CREDENTIALS_ID    = "github-creds"
