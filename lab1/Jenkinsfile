@@ -1,6 +1,10 @@
 pipeline {
   agent none
 
+  options {
+    skipDefaultCheckout()
+  }
+
   environment {
     IMAGE_NAME           = "dramax8569/ci-cd-groovy-golang-docker"
     IMAGE_TAG            = "latest"
