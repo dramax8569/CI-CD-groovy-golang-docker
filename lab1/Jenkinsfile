@@ -1,5 +1,4 @@
 pipeline {
-
     agent {
         docker {
             image 'golang:1.21'
@@ -8,24 +7,16 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "dramax8569/CI-CD-groovy-golang-docker"
+        IMAGE_NAME = "dramax8569/ci-cd-groovy-golang-docker"
         IMAGE_TAG = "latest"
-        DOCKER_CREDENTIALS_ID = "dockerhub-creds"  // ID de las credenciales en Jenkins
+        DOCKER_CREDENTIALS_ID = "dockerhub-creds"
     }
 
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-            }
-        }
-
-        stages {
-            stage('Clone') {
-                steps {
-                    sh 'git clone https://github.com/dramax8569/CI-CD-groovy-golang-docker.git'
-                    sh 'ls -la'
-                }
+                sh 'ls -la'
             }
         }
 
