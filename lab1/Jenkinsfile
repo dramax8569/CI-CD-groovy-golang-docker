@@ -1,30 +1,20 @@
 pipeline {
   agent any
-
   options {
     skipDefaultCheckout()
   }
 
   environment {
-    IMAGE_NAME           = "dramax8569/ci-cd-groovy-golang-docker"
-    IMAGE_TAG            = "latest"
+    IMAGE_NAME            = "dramax8569/ci-cd-groovy-golang-docker"
+    IMAGE_TAG             = "latest"
     DOCKER_CREDENTIALS_ID = "dockerhub-creds"
     GIT_CREDENTIALS_ID    = "github-creds"
   }
 
   stages {
-
-    stage('Verificar Workspace') {
-            steps {
-                sh 'pwd'
-                sh 'ls -la'
-                sh 'git rev-parse --is-inside-work-tree || echo "NO es un repo Git"'
-            }
-        }
-
-    stage('Checkout') {
-      agent any
+    stage('Setup') {
       steps {
+        // Todo dentro del mismo workspace
         deleteDir()
         git url: 'https://github.com/dramax8569/CI-CD-groovy-golang-docker.git',
             branch: 'main',
@@ -44,13 +34,11 @@ pipeline {
       steps {
         dir('lab1') {
           sh 'go version'
-          sh 'go mod tidy'                // Add this line to resolve dependencies
           sh 'go build -o app'
           sh 'go test ./...'
         }
       }
     }
-
 
     stage('Docker Build & Push') {
       steps {
@@ -76,6 +64,7 @@ pipeline {
           def deployScript = '''
             #!/bin/bash
             docker pull ${IMAGE_NAME}:${IMAGE_TAG}
+            docker rm -f ci-cd-app || true
             docker run -d --name ci-cd-app -p 8080:8080 ${IMAGE_NAME}:${IMAGE_TAG}
           '''
           writeFile file: 'deploy.sh', text: deployScript
@@ -84,11 +73,14 @@ pipeline {
         }
       }
     }
-
   }
 
   post {
-    success { echo "✅ Pipeline finalizado exitosamente." }
-    failure { echo "❌ Algo falló en la ejecución del pipeline." }
+    success {
+      echo "✅ Pipeline finalizado exitosamente."
+    }
+    failure {
+      echo "❌ Algo falló en la ejecución del pipeline."
+    }
   }
 }
