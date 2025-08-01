@@ -8,16 +8,22 @@ pipeline {
   }
 
   stages {
-    // 1️⃣ Clonamos el repositorio en el nodo Jenkins (donde sí existe .git)
     stage('Checkout') {
       agent any
       steps {
-        checkout scm
+        // 1) Limpiamos el workspace (por si hay restos)
+        deleteDir()
+
+        // 2) Clonamos el repo completo en el directorio actual
+        git branch: 'main',
+            url:    'https://github.com/dramax8569/CI-CD-groovy-golang-docker.git',
+            credentialsId: 'github-creds'
+
+        // Verificamos
         sh 'ls -la'
       }
     }
 
-    // 2️⃣ Build & Test dentro de un contenedor Go, **reusando** el workspace del nodo
     stage('Build & Test') {
       agent {
         docker {
@@ -33,14 +39,11 @@ pipeline {
       }
     }
 
-    // 3️⃣ Construir y subir la imagen Docker desde el nodo principal
     stage('Docker Build & Push') {
       agent any
       steps {
-        // Build
         sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
 
-        // Push usando credenciales seguras
         withCredentials([usernamePassword(
           credentialsId: "${DOCKER_CREDENTIALS_ID}",
           usernameVariable: 'DOCKER_USER',
@@ -57,6 +60,6 @@ pipeline {
 
   post {
     success { echo "✅ Pipeline finalizado exitosamente." }
-    failure { echo "❌ Algo falló en la ejecución del pipeline."  }
+    failure { echo "❌ Algo falló en la ejecución del pipeline." }
   }
 }
