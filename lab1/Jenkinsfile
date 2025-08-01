@@ -1,13 +1,15 @@
 pipeline {
 
     agent {
+        any
         docker {
             image 'golang:1.21'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
     environment {
-        IMAGE_NAME = "dramax8569/go-microservice"
+        IMAGE_NAME = "dramax8569/CI-CD-groovy-golang-docker"
         IMAGE_TAG = "latest"
         DOCKER_CREDENTIALS_ID = "dockerhub-creds"  // ID de las credenciales en Jenkins
     }
