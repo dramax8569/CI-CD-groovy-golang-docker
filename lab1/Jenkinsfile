@@ -50,6 +50,7 @@ pipeline {
       }
     }
 
+
     stage('Docker Build & Push') {
       steps {
         dir('lab1') {
