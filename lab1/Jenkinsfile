@@ -23,13 +23,20 @@ pipeline {
     }
 
     stage('Lint') {
+      agent {
+        docker {
+          image 'golang:1.21'
+          args  '-v /var/run/docker.sock:/var/run/docker.sock'
+          reuseNode true
+        }
+      }
       steps {
         dir('lab1') {
           sh 'go vet ./...'
         }
       }
     }
-    
+
     stage('Build & Test') {
       agent {
         docker {
