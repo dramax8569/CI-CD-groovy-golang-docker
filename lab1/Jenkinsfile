@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "dramax8569/go-microservice"
+        IMAGE_TAG = "latest"
+        DOCKER_CREDENTIALS_ID = "dockerhub-creds"  // ID de las credenciales en Jenkins
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Go App') {
+            steps {
+                sh 'go build -o app'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh 'go test ./...'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: "${DOCKER_CREDENTIALS_ID}",
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Pipeline finalizado exitosamente."
+        }
+        failure {
+            echo "❌ Algo falló en la ejecución del pipeline."
+        }
+    }
+}
