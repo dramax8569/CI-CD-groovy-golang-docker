@@ -9,10 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git(
-                  branch: 'main',
-                  url:    'https://github.com/dramax8569/CI-CD-groovy-golang-docker.git'
-                )
+                git branch: 'main', url: 'https://github.com/dramax8569/CI-CD-groovy-golang-docker.git'
             }
         }
 
@@ -20,7 +17,7 @@ pipeline {
             steps {
                 dir('lab2') {
                     sh '''
-                    docker run --rm \
+                      docker run --rm \
                         -v "$PWD":/app \
                         -w /app \
                         golang:1.22 \
@@ -29,7 +26,6 @@ pipeline {
                 }
             }
         }
-
 
         stage('Docker Build') {
             steps {
