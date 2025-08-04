@@ -5,7 +5,6 @@ WORKDIR /app
 COPY . .
 
 # IMPORTANTE: build completamente estático
-RUN apt-get update && apt-get install -y curl
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app
 
 # Etapa 2: imagen mínima compatible
