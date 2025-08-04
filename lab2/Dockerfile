@@ -8,7 +8,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app
 
 # Etapa 2: imagen mínima compatible
-FROM scratch
+FROM debian:bullseye-slim
 
 WORKDIR /app
 COPY --from=builder /app/app .
