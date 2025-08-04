@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/dramax8569/CI-CD-groovy-golang-docker.git'
+                git 'https://github.com/dramax8569/CI-CD-groovy-golang-docker.git'
             }
         }
 
