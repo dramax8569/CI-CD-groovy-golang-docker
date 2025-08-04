@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "go-api"
+        CONTAINER_NAME = "go-api-container"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/dramax8569/CI-CD-groovy-golang-docker.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('lab2') {
+                    sh 'go mod tidy'
+                    sh 'go build -o app'
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                dir('lab2') {
+                    sh 'docker build -t $IMAGE_NAME .'
+                }
+            }
+        }
+
+        stage('Docker Run') {
+            steps {
+                sh 'docker rm -f $CONTAINER_NAME || true'
+                sh 'docker run -d --name $CONTAINER_NAME -p 9090:8080 $IMAGE_NAME'
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh '''
+                    sleep 3
+                    curl -f http://localhost:9090/ping || exit 1
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline completado'
+        }
+        failure {
+            echo 'Fallo detectado. Revisa logs.'
+        }
+    }
+}
