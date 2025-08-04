@@ -14,6 +14,9 @@ FROM scratch
 WORKDIR /app
 COPY --from=builder /app/app .
 
+# Instalar curl en la imagen final
+RUN apt-get update && apt-get install -y curl
+
 ENV PORT=8080
 EXPOSE 8080
 
