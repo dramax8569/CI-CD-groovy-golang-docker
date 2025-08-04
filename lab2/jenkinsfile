@@ -4,6 +4,9 @@ pipeline {
     environment {
         IMAGE_NAME     = "go-api"
         CONTAINER_NAME = "go-api-container"
+        SONAR_PROJECT_KEY = "go-api-lab2"
+        SONAR_TOKEN = credentials('sonarqube-creds')
+        SONAR_HOST_URL = "http://host.docker.internal:9000"
     }
 
     stages {
@@ -74,6 +77,33 @@ pipeline {
                     echo "❌ Final attempt failed"
                     exit 1
                 '''
+            }
+        }
+
+        stage('Run Unit Tests and Coverage') {
+            steps {
+                dir('lab2') {
+                    sh 'go test ./... -coverprofile=coverage.out'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir('lab2') {
+                    sh '''
+                        docker run --rm \
+                            -e SONAR_HOST_URL=$SONAR_HOST_URL \
+                            -e SONAR_TOKEN=$SONAR_TOKEN \
+                            -v $(pwd):/usr/src \
+                            sonarsource/sonar-scanner-cli \
+                            -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+                            -Dsonar.sources=. \
+                            -Dsonar.host.url=$SONAR_HOST_URL \
+                            -Dsonar.login=$SONAR_TOKEN \
+                            -Dsonar.go.coverage.reportPaths=coverage.out
+                    '''
+                }
             }
         }
 
