@@ -16,16 +16,18 @@ pipeline {
         stage('Build (in Docker)') {
             steps {
                 dir('lab2') {
-                    sh '''
-                      docker run --rm \
-                        -v "$PWD":/app \
-                        -w /app \
-                        golang:1.22 \
-                        sh -c "go mod tidy && GOOS=linux GOARCH=amd64 go build -o app"
-                    '''
+                    sh """
+                        echo "Verificando si Docker está disponible:"
+                        docker --version
+                        echo "Verificando contenido actual:"
+                        ls -la
+                        echo "Intentando con montaje relativo:"
+                        docker run --rm -v "\$(pwd)":/app -w /app golang:1.22 ls -la
+                    """
                 }
             }
         }
+
 
         stage('Docker Build') {
             steps {
@@ -38,8 +40,15 @@ pipeline {
         stage('Docker Run') {
             steps {
                 sh '''
-                  docker rm -f $CONTAINER_NAME || true
-                  docker run -d --name $CONTAINER_NAME -p 9090:8080 $IMAGE_NAME
+                    # Parar y eliminar contenedor existente si existe
+                    docker stop go-api-container || true
+                    docker rm go-api-container || true
+                    
+                    # Ejecutar nuevo contenedor en puerto disponible
+                    docker run -d --name go-api-container -p 9090:8080 go-api:latest
+                    
+                    # Verificar que el contenedor esté corriendo
+                    docker ps | grep go-api-container
                 '''
             }
         }
@@ -47,11 +56,35 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh '''
-                  sleep 3
-                  curl -f http://localhost:9090/ping || exit 1
+                echo "=== SIMPLIFIED HEALTH CHECK ==="
+                
+                echo "1. Waiting for application to start..."
+                sleep 10
+                
+                echo "2. Checking container status:"
+                docker ps | grep go-api-container
+                
+                echo "3. Checking application logs:"
+                docker logs go-api-container
+                
+                echo "4. Testing application endpoints:"
+                
+                # Check if port is bound on host
+                echo "Checking if port 9090 is bound:"
+                netstat -tlnp | grep 9090 || echo "Port 9090 not found in netstat"
+                
+                # Test ping endpoint with verbose output  
+                echo "Testing ping endpoint (/ping) with verbose output:"
+                curl -v --connect-timeout 10 http://localhost:9090/ping || echo "❌ Ping endpoint failed with curl error code: $?"
+                
+                echo "5. Final health check for /ping endpoint:"
+                # Your Go app has a /ping endpoint that returns "pong"
+                curl -f http://localhost:9090/ping
                 '''
             }
         }
+
+
     }
 
     post {
